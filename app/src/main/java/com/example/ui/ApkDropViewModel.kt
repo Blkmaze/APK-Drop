@@ -16,6 +16,7 @@ import com.example.util.ApkInstaller
 import com.example.util.DownloadProgress
 import com.example.util.InstalledAppInfo
 import com.example.util.NetworkUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -106,9 +107,12 @@ class ApkDropViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         viewModelScope.launch {
-            repository.seedInitialCatalogIfEmpty()
+            try {
+                repository.seedInitialCatalogIfEmpty()
+            } catch (e: Exception) {
+                android.util.Log.e("ApkDropViewModel", "Error in seedInitialCatalogIfEmpty", e)
+            }
         }
-        // Auto-start local transfer server if on Wi-Fi so Firestick Downloader is ready immediately
         startTransferServer()
     }
 
@@ -127,15 +131,26 @@ class ApkDropViewModel(application: Application) : AndroidViewModel(application)
     fun generateNewQuickCode() {
         val code = (100000..999999).random().toString()
         _activeQuickCode.value = code
-        // Update LAN beacon broadcast with new code
-        val ip = NetworkUtils.getLocalIpAddress() ?: "127.0.0.1"
-        lanDiscovery.startDiscovery(ip, serverStatus.value.port, code)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val ip = NetworkUtils.getLocalIpAddress() ?: "127.0.0.1"
+                lanDiscovery.startDiscovery(ip, serverStatus.value.port, code)
+            } catch (e: Exception) {
+                android.util.Log.e("ApkDropViewModel", "Error updating discovery code", e)
+            }
+        }
     }
 
     fun startTransferServer() {
-        val ip = NetworkUtils.getLocalIpAddress() ?: "127.0.0.1"
-        httpServer.start(ip, 8888)
-        lanDiscovery.startDiscovery(ip, 8888, _activeQuickCode.value)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val ip = NetworkUtils.getLocalIpAddress() ?: "127.0.0.1"
+                httpServer.start(ip, 8888)
+                lanDiscovery.startDiscovery(ip, 8888, _activeQuickCode.value)
+            } catch (e: Exception) {
+                android.util.Log.e("ApkDropViewModel", "Error starting transfer server", e)
+            }
+        }
     }
 
     fun stopTransferServer() {

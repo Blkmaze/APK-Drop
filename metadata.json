@@ -1,6 +1,6 @@
 {
-  "name": "APK Drop",
-  "description": "Store and transfer APKs to Firestick, Android TV, and other Android devices with high-speed local beaming and quick codes.",
+  "name": "MazZe Tools",
+  "description": "MazZe Tools - Store and transfer APKs to Firestick, Android TV, and other Android devices with high-speed local beaming and quick codes.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

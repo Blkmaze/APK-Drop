@@ -21,7 +21,7 @@ object ApkInstaller {
         // On Android 8.0+, check if we can install unknown apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!context.packageManager.canRequestPackageInstalls()) {
-                Toast.makeText(context, "Please allow APK Drop to install unknown apps", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Please allow MazZe Tools to install unknown apps", Toast.LENGTH_LONG).show()
                 try {
                     val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
                         data = Uri.parse("package:${context.packageName}")

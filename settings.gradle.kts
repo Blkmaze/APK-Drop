@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "APK Drop"
+rootProject.name = "MazZe Tools"
 
 include(":app")

@@ -196,7 +196,7 @@ fun BeamToTvScreen(
                             IconButton(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    clipboard.setPrimaryClip(ClipData.newPlainText("APK Drop URL", serverUrl))
+                                    clipboard.setPrimaryClip(ClipData.newPlainText("MazZe Tools URL", serverUrl))
                                     Toast.makeText(context, "Copied URL: $serverUrl", Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.size(36.dp)
@@ -260,7 +260,7 @@ fun BeamToTvScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Enter this 6-digit code in APK Drop on your TV or other device's Receive tab.",
+                        text = "Enter this 6-digit code in MazZe Tools on your TV or other device's Receive tab.",
                         fontSize = 12.sp,
                         color = TextSecondary,
                         textAlign = TextAlign.Center
@@ -379,7 +379,7 @@ fun BeamToTvScreen(
 
                     if (discoveredDevices.isEmpty()) {
                         Text(
-                            text = "Scanning local network for Firesticks, Android TVs, and other phones running APK Drop...",
+                            text = "Scanning local network for Firesticks, Android TVs, and other phones running MazZe Tools...",
                             fontSize = 12.sp,
                             color = TextTertiary,
                             lineHeight = 16.sp

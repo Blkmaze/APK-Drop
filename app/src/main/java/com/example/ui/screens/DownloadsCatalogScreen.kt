@@ -120,7 +120,9 @@ fun DownloadsCatalogScreen(
     ) {
         // Doc Squiffy / Squiffix style security / IP banner
         item {
-            ShieldIpStatusBar()
+            val serverStatus by viewModel.serverStatus.collectAsStateWithLifecycle()
+            val currentIp = if (serverStatus.ipAddress.isNotEmpty()) serverStatus.ipAddress else "Wi-Fi Ready"
+            ShieldIpStatusBar(localIp = currentIp)
         }
 
         // Section Title: Downloads
@@ -281,7 +283,7 @@ fun DownloadsCatalogScreen(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "1. Architecture Mismatch: Older Firesticks require 32-bit (armeabi-v7a). If an app is 64-bit only, Fire OS gives a Parse Error.\n" +
-                                        "2. Developer Options: Go to Firestick Settings > My Fire TV > Developer Options > Install unknown apps > Turn ON for Downloader & APK Drop.\n" +
+                                        "2. Developer Options: Go to Firestick Settings > My Fire TV > Developer Options > Install unknown apps > Turn ON for Downloader & MazZe Tools.\n" +
                                         "3. Corrupted Download: Check Wi-Fi connection and tap Download again.\n" +
                                         "4. Android OS Version: Some apps require Android 10+ while Fire OS 7 is based on Android 9.",
                                 color = TextSecondary,
@@ -367,8 +369,7 @@ fun DownloadsCatalogScreen(
 }
 
 @Composable
-fun ShieldIpStatusBar() {
-    val localIp = NetworkUtils.getLocalIpAddress() ?: "Not Connected"
+fun ShieldIpStatusBar(localIp: String = "Wi-Fi Ready") {
     val isWifi = localIp.startsWith("192.168.") || localIp.startsWith("10.") || localIp.startsWith("172.")
 
     Card(
@@ -571,7 +572,7 @@ fun ApkFeaturedCard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Get APK Drop from Downloader on your TV device, open Receive, and enter this code.",
+                        text = "Get MazZe Tools from Downloader on your TV device, open Receive, and enter this code.",
                         color = TextSecondary,
                         fontSize = 11.sp,
                         lineHeight = 15.sp

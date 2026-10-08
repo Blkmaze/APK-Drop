@@ -56,7 +56,7 @@ class LanDiscovery(private val scope: CoroutineScope) {
                         // Ignore our own broadcast
                         if (senderIp == myIp) continue
 
-                        if (message.startsWith("APK_DROP_BEACON|")) {
+                        if (message.startsWith("MAZZE_TOOLS_BEACON|") || message.startsWith("APK_DROP_BEACON|")) {
                             val parts = message.split("|")
                             if (parts.size >= 4) {
                                 val name = parts[1]
@@ -96,7 +96,7 @@ class LanDiscovery(private val scope: CoroutineScope) {
             try {
                 val broadcastSocket = DatagramSocket().apply { broadcast = true }
                 val broadcastAddr = InetAddress.getByName("255.255.255.255")
-                val message = "APK_DROP_BEACON|$myDeviceName|$myPort|$myIp|$currentCode"
+                val message = "MAZZE_TOOLS_BEACON|$myDeviceName|$myPort|$myIp|$currentCode"
                 val data = message.toByteArray()
 
                 while (isActive) {

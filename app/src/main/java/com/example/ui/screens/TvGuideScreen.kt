@@ -97,7 +97,7 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                         "1. Press Back to return to \"My Fire TV\".\n" +
                         "2. Click \"Developer Options\".\n" +
                         "3. Select \"Install unknown apps\" (or Apps from Unknown Sources).\n" +
-                        "4. Turn it ON for \"Downloader\", \"Silk Browser\", and \"APK Drop\"."
+                        "4. Turn it ON for \"Downloader\", \"Silk Browser\", and \"MazZe Tools\"."
             )
         }
 
@@ -111,7 +111,7 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                 description = "The dreaded Parse Error happens when:\n\n" +
                         "• Architecture Mismatch: Most standard Firestick models (Fire TV Stick Lite, Stick 4K Max 1st gen) run 32-bit (armeabi-v7a). If you try to install a 64-bit-only (arm64-v8a) APK, it will fail.\n" +
                         "• Android API Level: Fire OS 7 is based on Android 9 (Pie). If an app requires Android 10 or 11 minimum, Fire OS cannot install it.\n" +
-                        "• Corrupted or Incomplete Download: Check your Wi-Fi and re-download from the APK Drop transfer URL."
+                        "• Corrupted or Incomplete Download: Check your Wi-Fi and re-download from the MazZe Tools transfer URL."
             )
         }
 
@@ -124,7 +124,7 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                 title = "How to Transfer Without Any Cables",
                 description = "Two super simple methods:\n\n" +
                         "• Method A (Browser / Downloader): Open \"Beam to TV\" tab on this phone. Open Downloader on Firestick, enter the IP (e.g. http://192.168.1.XX:8888) and 1-tap download!\n\n" +
-                        "• Method B (6-Digit PIN): Open APK Drop on both devices on the same Wi-Fi. Enter the 6-digit PIN on the TV Receive screen to pull the app directly."
+                        "• Method B (6-Digit PIN): Open MazZe Tools on both devices on the same Wi-Fi. Enter the 6-digit PIN on the TV Receive screen to pull the app directly."
             )
         }
     }

@@ -51,6 +51,8 @@ class ApkRepository(
     }
 
     suspend fun seedInitialCatalogIfEmpty() = withContext(Dispatchers.IO) {
+        try {
+            if (apkDao.getCount() > 0) return@withContext
         val initialItems = listOf(
             ApkItem(
                 name = "ClipBox",
@@ -229,10 +231,13 @@ class ApkRepository(
                         localFilePath = file.absolutePath,
                         isDownloaded = true,
                         isExtracted = true,
-                        description = "Local APK stored in APK Drop vault."
+                        description = "Local APK stored in MazZe Tools vault."
                     )
                 )
             }
+        }
+        } catch (e: Exception) {
+            android.util.Log.e("ApkRepository", "Error seeding initial catalog", e)
         }
     }
 

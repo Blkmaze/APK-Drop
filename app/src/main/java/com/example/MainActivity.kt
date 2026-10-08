@@ -79,6 +79,8 @@ import com.example.ui.theme.DarkSurfaceVariant
 import com.example.ui.theme.FireOrange
 import com.example.ui.theme.FireOrangeLight
 import com.example.ui.theme.GreenSuccess
+import com.example.ui.theme.MazzeCyan
+import com.example.ui.theme.MazzePurple
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
@@ -90,7 +92,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        try {
+            enableEdgeToEdge()
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "Failed to enable edge-to-edge", e)
+        }
 
         setContent {
             MyApplicationTheme {
@@ -261,7 +267,7 @@ fun TopAppBarHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Tv,
-                        contentDescription = "APK Drop",
+                        contentDescription = "MazZe Tools",
                         tint = Color.Black,
                         modifier = Modifier.size(22.dp)
                     )
@@ -270,17 +276,17 @@ fun TopAppBarHeader(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "APK",
+                            text = "MAZZE",
                             fontWeight = FontWeight.Black,
                             fontSize = 18.sp,
-                            color = FireOrange
+                            color = MazzePurple
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "DROP",
+                            text = "TOOLS",
                             fontWeight = FontWeight.Black,
                             fontSize = 18.sp,
-                            color = TextPrimary
+                            color = MazzeCyan
                         )
                     }
                     Text(

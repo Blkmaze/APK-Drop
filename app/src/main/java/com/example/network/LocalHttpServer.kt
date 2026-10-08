@@ -170,31 +170,32 @@ class LocalHttpServer(
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>APK Drop - Fire TV & Android Transfer Hub</title>
+                    <title>MazZe Tools - Fire TV & Android Transfer Hub</title>
                     <style>
                         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-                        body { background: #0B0E14; color: #E8EEFB; padding: 24px 16px; max-width: 900px; margin: 0 auto; }
+                        body { background: #080A11; color: #F8FAFC; padding: 24px 16px; max-width: 900px; margin: 0 auto; }
                         .header { text-align: center; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #1E2536; }
-                        .logo { font-size: 32px; font-weight: 800; color: #FF6D00; letter-spacing: -0.5px; }
-                        .tagline { color: #8F9CAE; font-size: 14px; margin-top: 6px; }
-                        .status-box { background: #141A26; border: 1px solid #232D42; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center; }
-                        .status-box h3 { color: #00E5FF; font-size: 16px; margin-bottom: 4px; }
-                        .card { background: #151A24; border: 1px solid #21283B; border-radius: 14px; padding: 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+                        .logo { font-size: 32px; font-weight: 800; color: #A855F7; letter-spacing: -0.5px; }
+                        .logo span { color: #00F0FF; }
+                        .tagline { color: #94A3B8; font-size: 14px; margin-top: 6px; }
+                        .status-box { background: #0F1422; border: 1px solid #263354; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center; }
+                        .status-box h3 { color: #00F0FF; font-size: 16px; margin-bottom: 4px; }
+                        .card { background: #131A2C; border: 1px solid #263354; border-radius: 14px; padding: 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
                         .card-info { flex: 1; min-width: 220px; }
                         .card-title { font-size: 18px; font-weight: 700; color: #FFFFFF; }
-                        .card-sub { font-size: 13px; color: #7F8D9E; margin-top: 4px; }
-                        .code-pill { background: #281A10; color: #FFA040; border: 1px solid #FF6D00; font-weight: bold; padding: 2px 8px; border-radius: 6px; font-size: 12px; display: inline-block; margin-right: 6px; }
-                        .btn-dl { background: #FF6D00; color: #000; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 15px; display: inline-block; transition: background 0.2s; }
-                        .btn-dl:hover { background: #FF8F00; }
-                        .btn-sec { background: #222B3D; color: #00E5FF; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px; }
-                        .section-title { font-size: 20px; font-weight: 700; margin: 24px 0 16px 0; color: #FF9E40; }
-                        .upload-box { background: #121620; border: 2px dashed #2C374D; border-radius: 12px; padding: 24px; text-align: center; margin-top: 32px; }
-                        .tip { background: #1D1808; border: 1px solid #735105; color: #FFD54F; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
+                        .card-sub { font-size: 13px; color: #94A3B8; margin-top: 4px; }
+                        .code-pill { background: #3B0764; color: #C084FC; border: 1px solid #A855F7; font-weight: bold; padding: 2px 8px; border-radius: 6px; font-size: 12px; display: inline-block; margin-right: 6px; }
+                        .btn-dl { background: linear-gradient(135deg, #A855F7, #7E22CE); color: #FFFFFF; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 15px; display: inline-block; transition: opacity 0.2s; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); }
+                        .btn-dl:hover { opacity: 0.9; }
+                        .btn-sec { background: #1E293B; color: #00F0FF; border: 1px solid #00F0FF; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px; }
+                        .section-title { font-size: 20px; font-weight: 700; margin: 24px 0 16px 0; color: #C084FC; }
+                        .upload-box { background: #0F1422; border: 2px dashed #263354; border-radius: 12px; padding: 24px; text-align: center; margin-top: 32px; }
+                        .tip { background: #181E30; border: 1px solid #00F0FF; color: #E0F2FE; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                        <div class="logo">⚡ APK Drop TV Hub</div>
+                        <div class="logo">⚡ MAZZE <span>TOOLS</span></div>
                         <div class="tagline">Direct local Wi-Fi transfer to Firestick, Smart TV, and Android devices</div>
                     </div>
                     
@@ -381,7 +382,7 @@ class LocalHttpServer(
                 lastEvent = "Uploaded APK saved to Vault: ${targetFile.name}"
             )
 
-            val redirectHtml = "<html><body><h2>Upload Successful!</h2><p>Saved to APK Drop Vault.</p><a href='/'>Return to Hub</a></body></html>"
+            val redirectHtml = "<html><body><h2>Upload Successful!</h2><p>Saved to MazZe Tools Vault.</p><a href='/'>Return to Hub</a></body></html>"
             val respBytes = redirectHtml.toByteArray()
             val header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ${respBytes.size}\r\nConnection: close\r\n\r\n"
             output.write(header.toByteArray())

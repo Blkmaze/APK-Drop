@@ -26,6 +26,9 @@ interface ApkDao {
     @Query("SELECT * FROM apks WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): ApkItem?
 
+    @Query("SELECT COUNT(*) FROM apks")
+    suspend fun getCount(): Int
+
     @Query("SELECT * FROM apks WHERE packageName = :packageName LIMIT 1")
     suspend fun getByPackageName(packageName: String): ApkItem?
 
