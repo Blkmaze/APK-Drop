@@ -1,5 +1,6 @@
 package com.example.ui.dialogs
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -45,9 +49,11 @@ import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.DarkSurface
 import com.example.ui.theme.FireOrange
+import com.example.ui.theme.MazzeCyan
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 
 @Composable
 fun DirectUrlDialog(
@@ -56,12 +62,24 @@ fun DirectUrlDialog(
 ) {
     var urlText by remember { mutableStateOf("") }
     var nameText by remember { mutableStateOf("") }
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
+
+    BackHandler {
+        onDismiss()
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(2.dp, MazzeCyan, RoundedCornerShape(16.dp)),
             colors = CardDefaults.cardColors(containerColor = DarkBackground),
-            border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(
@@ -87,7 +105,12 @@ fun DirectUrlDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Download by Direct URL", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     }
-                    IconButton(onClick = onDismiss) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .tvFocusHighlight(shape = CircleShape)
+                            .testTag("btn_close_direct_url")
+                    ) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = TextSecondary)
                     }
                 }
@@ -100,7 +123,11 @@ fun DirectUrlDialog(
                 OutlinedTextField(
                     value = urlText,
                     onValueChange = { urlText = it },
-                    modifier = Modifier.fillMaxWidth().testTag("custom_url_input"),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(initialFocusRequester)
+                        .tvFocusHighlight(shape = RoundedCornerShape(10.dp))
+                        .testTag("custom_url_input"),
                     placeholder = { Text("https://example.com/app.apk", color = TextTertiary, fontSize = 13.sp) },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
@@ -108,7 +135,9 @@ fun DirectUrlDialog(
                         focusedBorderColor = FireOrange,
                         unfocusedBorderColor = BorderSubtle,
                         focusedContainerColor = DarkSurface,
-                        unfocusedContainerColor = DarkSurface
+                        unfocusedContainerColor = DarkSurface,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary
                     )
                 )
 
@@ -117,7 +146,9 @@ fun DirectUrlDialog(
                 OutlinedTextField(
                     value = nameText,
                     onValueChange = { nameText = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .tvFocusHighlight(shape = RoundedCornerShape(10.dp)),
                     placeholder = { Text("App Name (Optional)", color = TextTertiary, fontSize = 13.sp) },
                     singleLine = true,
                     shape = RoundedCornerShape(10.dp),
@@ -125,7 +156,9 @@ fun DirectUrlDialog(
                         focusedBorderColor = FireOrange,
                         unfocusedBorderColor = BorderSubtle,
                         focusedContainerColor = DarkSurface,
-                        unfocusedContainerColor = DarkSurface
+                        unfocusedContainerColor = DarkSurface,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary
                     )
                 )
 
@@ -137,7 +170,11 @@ fun DirectUrlDialog(
                             onDownload(urlText.trim(), nameText.trim())
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(46.dp).testTag("confirm_download_url_button"),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
+                        .tvFocusHighlight(shape = RoundedCornerShape(10.dp))
+                        .testTag("confirm_download_url_button"),
                     enabled = urlText.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                     shape = RoundedCornerShape(10.dp)

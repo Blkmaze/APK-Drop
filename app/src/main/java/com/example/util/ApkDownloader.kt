@@ -46,13 +46,34 @@ class ApkDownloader(private val context: Context) {
                 .replace(Regex("[^a-zA-Z0-9._-]"), "_")
             val targetFile = File(vaultDir, if (safeName.endsWith(".apk")) safeName else "$safeName.apk")
 
-            val url = URL(urlStr)
-            connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = 15000
-            connection.readTimeout = 30000
-            connection.instanceFollowRedirects = true
-            connection.setRequestProperty("User-Agent", "Downloader/1.4.4 (Android TV; FireTV)")
-            connection.connect()
+            var currentUrl = urlStr
+            var redirectCount = 0
+            var finalConnection: HttpURLConnection? = null
+
+            while (redirectCount < 5) {
+                val url = URL(currentUrl)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 15000
+                conn.readTimeout = 30000
+                conn.instanceFollowRedirects = true
+                conn.setRequestProperty("User-Agent", "Downloader/1.4.4 (Android TV; FireTV)")
+                conn.connect()
+
+                val code = conn.responseCode
+                if (code in listOf(HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_SEE_OTHER, 307, 308)) {
+                    val location = conn.getHeaderField("Location")
+                    conn.disconnect()
+                    if (!location.isNullOrEmpty()) {
+                        currentUrl = location
+                        redirectCount++
+                        continue
+                    }
+                }
+                finalConnection = conn
+                break
+            }
+
+            connection = finalConnection ?: (URL(currentUrl).openConnection() as HttpURLConnection)
 
             val responseCode = connection.responseCode
             if (responseCode !in 200..299) {

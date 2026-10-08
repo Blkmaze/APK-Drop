@@ -43,10 +43,14 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -74,6 +78,7 @@ import com.example.ui.theme.RedWarning
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 import com.example.util.NetworkUtils
 
 @Composable
@@ -85,6 +90,13 @@ fun BeamToTvScreen(
     val serverStatus by viewModel.serverStatus.collectAsStateWithLifecycle()
     val quickCode by viewModel.activeQuickCode.collectAsStateWithLifecycle()
     val discoveredDevices by viewModel.discoveredDevices.collectAsStateWithLifecycle()
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
 
     val serverUrl = if (serverStatus.ipAddress.isNotEmpty()) {
         "http://${serverStatus.ipAddress}:${serverStatus.port}"
@@ -156,7 +168,10 @@ fun BeamToTvScreen(
                                 uncheckedThumbColor = TextTertiary,
                                 uncheckedTrackColor = DarkSurfaceVariant
                             ),
-                            modifier = Modifier.testTag("server_toggle_switch")
+                            modifier = Modifier
+                                .focusRequester(initialFocusRequester)
+                                .tvFocusHighlight(shape = RoundedCornerShape(16.dp))
+                                .testTag("server_toggle_switch")
                         )
                     }
 
@@ -199,7 +214,9 @@ fun BeamToTvScreen(
                                     clipboard.setPrimaryClip(ClipData.newPlainText("MazZe Tools URL", serverUrl))
                                     Toast.makeText(context, "Copied URL: $serverUrl", Toast.LENGTH_SHORT).show()
                                 },
-                                modifier = Modifier.size(36.dp)
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .tvFocusHighlight(shape = CircleShape)
                             ) {
                                 Icon(Icons.Default.ContentCopy, contentDescription = "Copy URL", tint = FireOrange)
                             }
@@ -253,7 +270,10 @@ fun BeamToTvScreen(
                             fontFamily = FontFamily.Monospace
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        IconButton(onClick = { viewModel.generateNewQuickCode() }) {
+                        IconButton(
+                            onClick = { viewModel.generateNewQuickCode() },
+                            modifier = Modifier.tvFocusHighlight(shape = CircleShape)
+                        ) {
                             Icon(Icons.Default.Refresh, contentDescription = "Regenerate Code", tint = TextSecondary)
                         }
                     }
@@ -403,6 +423,7 @@ fun DiscoveredDeviceRow(device: DiscoveredDevice) {
             .padding(vertical = 6.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(DarkSurfaceVariant)
+            .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

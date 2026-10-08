@@ -13,6 +13,8 @@ import com.example.network.ServerStatus
 import com.example.util.ApkDownloader
 import com.example.util.ApkExtractor
 import com.example.util.ApkInstaller
+import com.example.util.AppUpdateChecker
+import com.example.util.AppUpdateInfo
 import com.example.util.DownloadProgress
 import com.example.util.InstalledAppInfo
 import com.example.util.NetworkUtils
@@ -41,6 +43,13 @@ class ApkDropViewModel(application: Application) : AndroidViewModel(application)
     private val lanDiscovery = LanDiscovery(viewModelScope)
     private val apkDownloader = ApkDownloader(application)
     private val apkExtractor = ApkExtractor(application)
+    private val appUpdateChecker = AppUpdateChecker(application)
+
+    private val _updateInfo = MutableStateFlow<AppUpdateInfo?>(null)
+    val updateInfo: StateFlow<AppUpdateInfo?> = _updateInfo.asStateFlow()
+
+    private val _isCheckingUpdate = MutableStateFlow(false)
+    val isCheckingUpdate: StateFlow<Boolean> = _isCheckingUpdate.asStateFlow()
 
     private val _currentTab = MutableStateFlow(AppTab.DOWNLOADS)
     val currentTab: StateFlow<AppTab> = _currentTab.asStateFlow()
@@ -114,6 +123,53 @@ class ApkDropViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         startTransferServer()
+        checkForUpdates(isManual = false)
+    }
+
+    fun checkForUpdates(isManual: Boolean = false) {
+        viewModelScope.launch {
+            _isCheckingUpdate.value = true
+            if (isManual) {
+                _snackbarMessage.value = "Checking for updates..."
+            }
+            try {
+                val info = appUpdateChecker.checkForUpdate(isManual = isManual)
+                if (info.hasUpdate) {
+                    _updateInfo.value = info
+                } else if (isManual) {
+                    _snackbarMessage.value = "App is up to date."
+                }
+            } catch (e: Exception) {
+                if (isManual) {
+                    _snackbarMessage.value = "Update check failed: ${e.message}"
+                }
+            } finally {
+                _isCheckingUpdate.value = false
+            }
+        }
+    }
+
+    fun dismissUpdateDialog() {
+        _updateInfo.value = null
+    }
+
+    fun performAppUpdate(info: AppUpdateInfo) {
+        viewModelScope.launch {
+            _snackbarMessage.value = "Downloading APK update..."
+            val targetFile = apkDownloader.downloadApk(
+                urlStr = info.apkDownloadUrl,
+                title = "APK-Drop",
+                destFileName = "APK-Drop"
+            )
+            if (targetFile != null && targetFile.exists()) {
+                appUpdateChecker.saveLastSeenUpdatedAt(info.apkUpdatedAt)
+                _snackbarMessage.value = "Download complete. Starting installer..."
+                ApkInstaller.installApk(getApplication(), targetFile.absolutePath)
+                _updateInfo.value = null
+            } else {
+                _snackbarMessage.value = "Failed to download update."
+            }
+        }
     }
 
     fun setTab(tab: AppTab) {

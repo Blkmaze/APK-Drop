@@ -1,11 +1,11 @@
 package com.example.ui.dialogs
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
@@ -29,10 +28,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,9 +51,11 @@ import com.example.ui.theme.DarkSurfaceVariant
 import com.example.ui.theme.FireOrange
 import com.example.ui.theme.FireOrangeDark
 import com.example.ui.theme.FireOrangeLight
+import com.example.ui.theme.MazzeCyan
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 import com.example.util.NetworkUtils
 
 @Composable
@@ -59,11 +65,24 @@ fun ApkDetailDialog(
     onDownload: () -> Unit,
     onBeam: () -> Unit
 ) {
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
+
+    BackHandler {
+        onDismiss()
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(2.dp, MazzeCyan, RoundedCornerShape(16.dp)),
             colors = CardDefaults.cardColors(containerColor = DarkBackground),
-            border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(
@@ -93,7 +112,12 @@ fun ApkDetailDialog(
                             Text(apk.developer, fontSize = 12.sp, color = TextSecondary)
                         }
                     }
-                    IconButton(onClick = onDismiss) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .tvFocusHighlight(shape = CircleShape)
+                            .testTag("btn_close_apk_detail")
+                    ) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = TextSecondary)
                     }
                 }
@@ -140,7 +164,12 @@ fun ApkDetailDialog(
                             onDownload()
                             onDismiss()
                         },
-                        modifier = Modifier.weight(1f).height(44.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .focusRequester(initialFocusRequester)
+                            .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
+                            .testTag("btn_detail_download"),
                         colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -154,7 +183,11 @@ fun ApkDetailDialog(
                             onBeam()
                             onDismiss()
                         },
-                        modifier = Modifier.weight(1f).height(44.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
+                            .testTag("btn_detail_beam"),
                         colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceVariant),
                         shape = RoundedCornerShape(8.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, CyanAccent)

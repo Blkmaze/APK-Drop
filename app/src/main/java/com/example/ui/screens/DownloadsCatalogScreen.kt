@@ -50,6 +50,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +58,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -79,10 +82,12 @@ import com.example.ui.theme.FireOrange
 import com.example.ui.theme.FireOrangeDark
 import com.example.ui.theme.FireOrangeLight
 import com.example.ui.theme.GreenSuccess
+import com.example.ui.theme.MazzeCyan
 import com.example.ui.theme.RedWarning
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 import com.example.util.NetworkUtils
 
 @Composable
@@ -94,6 +99,14 @@ fun DownloadsCatalogScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     var parseErrorExpanded by remember { mutableStateOf(false) }
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
+
     val categories = remember {
         listOf(
             "All",
@@ -154,6 +167,8 @@ fun DownloadsCatalogScreen(
                 onValueChange = { viewModel.setSearchQuery(it) },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .focusRequester(initialFocusRequester)
+                    .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
                     .testTag("search_apps_input"),
                 placeholder = {
                     Text(
@@ -171,7 +186,10 @@ fun DownloadsCatalogScreen(
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                        IconButton(
+                            onClick = { viewModel.setSearchQuery("") },
+                            modifier = Modifier.tvFocusHighlight(shape = CircleShape)
+                        ) {
                             Text(text = "✕", color = TextSecondary, fontWeight = FontWeight.Bold)
                         }
                     }
@@ -210,7 +228,9 @@ fun DownloadsCatalogScreen(
                                 color = if (isSelected) FireOrangeLight else BorderSubtle,
                                 shape = RoundedCornerShape(8.dp)
                             )
-                            .clickable { viewModel.setSelectedCategory(cat) }
+                            .tvFocusHighlight(shape = RoundedCornerShape(8.dp)) {
+                                viewModel.setSelectedCategory(cat)
+                            }
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                             .testTag("filter_cat_$cat")
                     ) {
@@ -225,13 +245,15 @@ fun DownloadsCatalogScreen(
             }
         }
 
-        // Parse Error Troubleshooting Banner (as seen in screenshot)
+        // Parse Error Troubleshooting Banner
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .clickable { parseErrorExpanded = !parseErrorExpanded }
+                    .tvFocusHighlight(shape = RoundedCornerShape(10.dp)) {
+                        parseErrorExpanded = !parseErrorExpanded
+                    }
                     .testTag("parse_error_troubleshooter_card"),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1710)),
                 border = androidx.compose.foundation.BorderStroke(1.dp, FireOrangeDark)
@@ -293,6 +315,7 @@ fun DownloadsCatalogScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(
                                 onClick = { viewModel.setShowParseErrorDialog(true) },
+                                modifier = Modifier.tvFocusHighlight(shape = RoundedCornerShape(6.dp)),
                                 colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                                 shape = RoundedCornerShape(6.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
@@ -481,8 +504,13 @@ fun ApkFeaturedCard(
                     Spacer(modifier = Modifier.width(1.dp))
                 }
 
-                IconButton(onClick = onInfoClick, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.Info, contentDescription = "Info", tint = TextTertiary, modifier = Modifier.size(18.dp))
+                IconButton(
+                    onClick = onInfoClick,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .tvFocusHighlight(shape = CircleShape)
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = "Info", tint = TextTertiary, modifier = Modifier.size(20.dp))
                 }
             }
 
@@ -592,6 +620,7 @@ fun ApkFeaturedCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(44.dp)
+                        .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
                         .testTag("download_btn_${apk.id}"),
                     colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                     shape = RoundedCornerShape(8.dp)
@@ -616,6 +645,7 @@ fun ApkFeaturedCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(44.dp)
+                        .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
                         .testTag("beam_btn_${apk.id}"),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceHighlight),
                     shape = RoundedCornerShape(8.dp),

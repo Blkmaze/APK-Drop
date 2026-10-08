@@ -1,10 +1,11 @@
 package com.example.ui.dialogs
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -27,10 +28,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,17 +44,29 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.AmberAlert
 import com.example.ui.theme.BorderSubtle
-import com.example.ui.theme.CyanAccent
 import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.DarkSurface
 import com.example.ui.theme.FireOrange
 import com.example.ui.theme.FireOrangeLight
+import com.example.ui.theme.MazzeCyan
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 
 @Composable
 fun ParseErrorGuideDialog(onDismiss: () -> Unit) {
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
+
+    BackHandler {
+        onDismiss()
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -56,9 +74,9 @@ fun ParseErrorGuideDialog(onDismiss: () -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.85f),
+                .fillMaxHeight(0.85f)
+                .border(2.dp, MazzeCyan, RoundedCornerShape(16.dp)),
             colors = CardDefaults.cardColors(containerColor = DarkBackground),
-            border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(
@@ -87,7 +105,12 @@ fun ParseErrorGuideDialog(onDismiss: () -> Unit) {
                             Text("Why Android TV & Fire OS refuse some APKs", fontSize = 11.sp, color = TextSecondary)
                         }
                     }
-                    IconButton(onClick = onDismiss) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .tvFocusHighlight(shape = CircleShape)
+                            .testTag("btn_close_parse_guide")
+                    ) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = TextSecondary)
                     }
                 }
@@ -144,7 +167,12 @@ fun ParseErrorGuideDialog(onDismiss: () -> Unit) {
 
                 Button(
                     onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp)
+                        .focusRequester(initialFocusRequester)
+                        .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
+                        .testTag("btn_got_it_parse_guide"),
                     colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -162,6 +190,8 @@ private fun DiagnosticSection(title: String, body: String) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
             .background(DarkSurface)
+            .border(1.dp, BorderSubtle, RoundedCornerShape(10.dp))
+            .tvFocusHighlight(shape = RoundedCornerShape(10.dp))
             .padding(14.dp)
     ) {
         Column {

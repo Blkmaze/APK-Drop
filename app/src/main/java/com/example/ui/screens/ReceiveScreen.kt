@@ -41,6 +41,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -71,6 +74,7 @@ import com.example.ui.theme.GreenSuccess
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 import com.example.util.ApkInstaller
 import com.example.util.NetworkUtils
 
@@ -83,6 +87,13 @@ fun ReceiveScreen(
     val focusManager = LocalFocusManager.current
     val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
     val discoveredDevices by viewModel.discoveredDevices.collectAsStateWithLifecycle()
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
 
     LazyColumn(
         modifier = modifier
@@ -149,6 +160,8 @@ fun ReceiveScreen(
                         onValueChange = { if (it.length <= 6) codeInput = it },
                         modifier = Modifier
                             .fillMaxWidth()
+                            .focusRequester(initialFocusRequester)
+                            .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
                             .testTag("code_input_field"),
                         placeholder = {
                             Text(
@@ -198,6 +211,7 @@ fun ReceiveScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
+                            .tvFocusHighlight(shape = RoundedCornerShape(10.dp))
                             .testTag("fetch_code_button"),
                         enabled = codeInput.length >= 3 && !downloadProgress.isDownloading,
                         colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
@@ -271,7 +285,10 @@ fun ReceiveScreen(
                                 onClick = {
                                     ApkInstaller.installApk(viewModel.getApplication(), file.absolutePath)
                                 },
-                                modifier = Modifier.fillMaxWidth().height(42.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .tvFocusHighlight(shape = RoundedCornerShape(8.dp)),
                                 colors = ButtonDefaults.buttonColors(containerColor = GreenSuccess),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
@@ -328,7 +345,7 @@ fun ReceiveScreen(
                                     .padding(vertical = 4.dp)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(DarkSurfaceVariant)
-                                    .clickable {
+                                    .tvFocusHighlight(shape = RoundedCornerShape(8.dp)) {
                                         if (dev.activeCode.isNotBlank()) {
                                             codeInput = dev.activeCode
                                             viewModel.downloadByQuickCode(dev.activeCode)
@@ -351,7 +368,8 @@ fun ReceiveScreen(
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = CyanAccent),
                                     shape = RoundedCornerShape(6.dp),
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                    modifier = Modifier.tvFocusHighlight(shape = RoundedCornerShape(6.dp))
                                 ) {
                                     Text("Connect", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }

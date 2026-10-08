@@ -38,9 +38,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +68,7 @@ import com.example.ui.theme.RedWarning
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 import com.example.util.NetworkUtils
 
 @Composable
@@ -73,6 +78,13 @@ fun ApkVaultScreen(
     modifier: Modifier = Modifier
 ) {
     val totalBytes = vaultApks.sumOf { it.fileSizeBytes }
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
 
     LazyColumn(
         modifier = modifier
@@ -154,6 +166,8 @@ fun ApkVaultScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(44.dp)
+                                .focusRequester(initialFocusRequester)
+                                .tvFocusHighlight(shape = RoundedCornerShape(10.dp))
                                 .testTag("extract_apps_button"),
                             colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                             shape = RoundedCornerShape(10.dp)
@@ -168,6 +182,7 @@ fun ApkVaultScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(44.dp)
+                                .tvFocusHighlight(shape = RoundedCornerShape(10.dp))
                                 .testTag("direct_url_download_button"),
                             shape = RoundedCornerShape(10.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, CyanAccent)
@@ -209,29 +224,31 @@ fun ApkVaultScreen(
                             imageVector = Icons.Default.Archive,
                             contentDescription = null,
                             tint = TextTertiary,
-                            modifier = Modifier.size(54.dp)
+                            modifier = Modifier.size(52.dp)
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "Your Vault is Empty",
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
+                            fontSize = 16.sp
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Download apps from the Catalog, or tap \"Extract App\" to pull any app installed on your phone to beam to your Fire TV!",
+                            text = "Download featured apps from the catalog or extract apps already installed on your device to beam them.",
                             color = TextSecondary,
-                            fontSize = 13.sp,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            fontSize = 12.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            lineHeight = 16.sp
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = { viewModel.setTab(AppTab.DOWNLOADS) },
                             colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.tvFocusHighlight(shape = RoundedCornerShape(8.dp))
                         ) {
-                            Text("Browse App Catalog", color = Color.Black, fontWeight = FontWeight.Bold)
+                            Text("Browse Downloads Catalog", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -333,21 +350,29 @@ fun VaultApkItemCard(
                     }
                 }
 
-                IconButton(onClick = onDeleteClick, modifier = Modifier.size(32.dp)) {
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .tvFocusHighlight(shape = CircleShape)
+                ) {
                     Icon(Icons.Default.Delete, contentDescription = "Delete", tint = RedWarning.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Action row
+            // Action row with TV remote focus highlights
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
                     onClick = onBeamClick,
-                    modifier = Modifier.weight(1.2f).height(38.dp),
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .height(38.dp)
+                        .tvFocusHighlight(shape = RoundedCornerShape(8.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = FireOrange),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp)
@@ -359,7 +384,10 @@ fun VaultApkItemCard(
 
                 OutlinedButton(
                     onClick = onInstallClick,
-                    modifier = Modifier.weight(1f).height(38.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(38.dp)
+                        .tvFocusHighlight(shape = RoundedCornerShape(8.dp)),
                     shape = RoundedCornerShape(8.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, CyanAccent),
                     contentPadding = PaddingValues(horizontal = 8.dp)
@@ -375,6 +403,7 @@ fun VaultApkItemCard(
                         .size(38.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(DarkSurfaceVariant)
+                        .tvFocusHighlight(shape = RoundedCornerShape(8.dp))
                 ) {
                     Icon(Icons.Default.Share, contentDescription = "Share", tint = TextSecondary, modifier = Modifier.size(18.dp))
                 }

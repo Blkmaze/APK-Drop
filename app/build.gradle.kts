@@ -16,7 +16,8 @@ android {
     applicationId = "com.aistudio.apkdrop.beam"
     minSdk = 24
     targetSdk = 35
-    versionCode = 2
+    val propVersionCode = (project.findProperty("appVersionCode") as? String)?.toIntOrNull() ?: 2
+    versionCode = propVersionCode
     versionName = "2.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

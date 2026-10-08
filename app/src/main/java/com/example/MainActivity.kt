@@ -34,8 +34,10 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +55,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -63,6 +67,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppTab
 import com.example.ui.ApkDropViewModel
 import com.example.ui.dialogs.ApkDetailDialog
+import com.example.ui.dialogs.AppUpdateDialog
 import com.example.ui.dialogs.DirectUrlDialog
 import com.example.ui.dialogs.ExtractAppsDialog
 import com.example.ui.dialogs.ParseErrorGuideDialog
@@ -85,6 +90,7 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 
 class MainActivity : ComponentActivity() {
 
@@ -112,6 +118,7 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
     val catalogApks by viewModel.catalogApks.collectAsStateWithLifecycle()
     val vaultApks by viewModel.vaultApks.collectAsStateWithLifecycle()
     val serverStatus by viewModel.serverStatus.collectAsStateWithLifecycle()
+    val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
 
     val showExtractDialog by viewModel.showExtractDialog.collectAsStateWithLifecycle()
     val installedApps by viewModel.installedApps.collectAsStateWithLifecycle()
@@ -120,6 +127,9 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
     val showDirectUrlDialog by viewModel.showDirectUrlDialog.collectAsStateWithLifecycle()
     val showParseErrorDialog by viewModel.showParseErrorDialog.collectAsStateWithLifecycle()
     val selectedApkDetail by viewModel.selectedApkDetail.collectAsStateWithLifecycle()
+
+    val updateInfo by viewModel.updateInfo.collectAsStateWithLifecycle()
+    val isCheckingUpdate by viewModel.isCheckingUpdate.collectAsStateWithLifecycle()
 
     val snackbarMessage by viewModel.snackbarMessage.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -131,8 +141,19 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
         }
     }
 
-    // Android back handler
-    BackHandler(enabled = currentTab != AppTab.DOWNLOADS) {
+    // Android / TV remote back handler: close dialogs first, then go back to Downloads tab
+    val hasOpenDialog = updateInfo != null || showExtractDialog || showDirectUrlDialog || showParseErrorDialog || selectedApkDetail != null
+    BackHandler(enabled = hasOpenDialog) {
+        when {
+            updateInfo != null -> viewModel.dismissUpdateDialog()
+            showExtractDialog -> viewModel.setShowExtractDialog(false)
+            showDirectUrlDialog -> viewModel.setShowDirectUrlDialog(false)
+            showParseErrorDialog -> viewModel.setShowParseErrorDialog(false)
+            selectedApkDetail != null -> viewModel.openApkDetail(null)
+        }
+    }
+
+    BackHandler(enabled = !hasOpenDialog && currentTab != AppTab.DOWNLOADS) {
         viewModel.setTab(AppTab.DOWNLOADS)
     }
 
@@ -145,8 +166,10 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
                 serverRunning = serverStatus.isRunning,
                 serverIp = serverStatus.ipAddress,
                 serverPort = serverStatus.port,
+                isCheckingUpdate = isCheckingUpdate,
                 onAddUrlClick = { viewModel.setShowDirectUrlDialog(true) },
-                onHelpClick = { viewModel.setShowParseErrorDialog(true) }
+                onHelpClick = { viewModel.setShowParseErrorDialog(true) },
+                onCheckUpdateClick = { viewModel.checkForUpdates(isManual = true) }
             )
         },
         bottomBar = {
@@ -161,7 +184,9 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
                     onClick = { viewModel.loadInstalledApps() },
                     containerColor = FireOrange,
                     contentColor = Color.Black,
-                    modifier = Modifier.testTag("fab_extract_app")
+                    modifier = Modifier
+                        .tvFocusHighlight(shape = RoundedCornerShape(16.dp))
+                        .testTag("fab_extract_app")
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp),
@@ -201,6 +226,15 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
     }
 
     // Dialogs
+    updateInfo?.let { info ->
+        AppUpdateDialog(
+            updateInfo = info,
+            downloadProgress = downloadProgress,
+            onDismiss = { viewModel.dismissUpdateDialog() },
+            onStartUpdate = { viewModel.performAppUpdate(info) }
+        )
+    }
+
     if (showExtractDialog) {
         ExtractAppsDialog(
             installedApps = installedApps,
@@ -229,8 +263,8 @@ fun MainAppScreen(viewModel: ApkDropViewModel) {
             onDismiss = { viewModel.openApkDetail(null) },
             onDownload = { viewModel.downloadApkItem(apk) },
             onBeam = {
-                viewModel.downloadApkItem(apk)
                 viewModel.setTab(AppTab.BEAM_TV)
+                viewModel.openApkDetail(null)
             }
         )
     }
@@ -241,8 +275,10 @@ fun TopAppBarHeader(
     serverRunning: Boolean,
     serverIp: String,
     serverPort: Int,
+    isCheckingUpdate: Boolean,
     onAddUrlClick: () -> Unit,
-    onHelpClick: () -> Unit
+    onHelpClick: () -> Unit,
+    onCheckUpdateClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -298,14 +334,43 @@ fun TopAppBarHeader(
                 }
             }
 
-            // Quick actions
+            // Quick actions with D-pad remote focus highlights
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // Check for updates button
+                IconButton(
+                    onClick = onCheckUpdateClick,
+                    enabled = !isCheckingUpdate,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(DarkSurfaceVariant)
+                        .tvFocusHighlight(shape = CircleShape)
+                        .testTag("btn_check_updates")
+                ) {
+                    if (isCheckingUpdate) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = MazzeCyan,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.SystemUpdate,
+                            contentDescription = "Check for Updates",
+                            tint = MazzeCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
                 IconButton(
                     onClick = onAddUrlClick,
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(DarkSurfaceVariant)
+                        .tvFocusHighlight(shape = CircleShape)
+                        .testTag("btn_add_url")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Link,
@@ -321,6 +386,8 @@ fun TopAppBarHeader(
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(DarkSurfaceVariant)
+                        .tvFocusHighlight(shape = CircleShape)
+                        .testTag("btn_help_guide")
                 ) {
                     Icon(
                         imageVector = Icons.Default.HelpOutline,
@@ -358,7 +425,9 @@ fun AppBottomNavigationBar(
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),
-            modifier = Modifier.testTag("nav_downloads")
+            modifier = Modifier
+                .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
+                .testTag("nav_downloads")
         )
 
         NavigationBarItem(
@@ -373,7 +442,9 @@ fun AppBottomNavigationBar(
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),
-            modifier = Modifier.testTag("nav_vault")
+            modifier = Modifier
+                .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
+                .testTag("nav_vault")
         )
 
         NavigationBarItem(
@@ -388,7 +459,9 @@ fun AppBottomNavigationBar(
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),
-            modifier = Modifier.testTag("nav_beam_tv")
+            modifier = Modifier
+                .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
+                .testTag("nav_beam_tv")
         )
 
         NavigationBarItem(
@@ -403,7 +476,9 @@ fun AppBottomNavigationBar(
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),
-            modifier = Modifier.testTag("nav_receive")
+            modifier = Modifier
+                .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
+                .testTag("nav_receive")
         )
 
         NavigationBarItem(
@@ -418,7 +493,9 @@ fun AppBottomNavigationBar(
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),
-            modifier = Modifier.testTag("nav_guide")
+            modifier = Modifier
+                .tvFocusHighlight(shape = RoundedCornerShape(12.dp))
+                .testTag("nav_guide")
         )
     }
 }

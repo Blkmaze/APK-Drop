@@ -30,10 +30,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,9 +54,18 @@ import com.example.ui.theme.GreenSuccess
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TextTertiary
+import com.example.ui.theme.tvFocusHighlight
 
 @Composable
 fun TvGuideScreen(modifier: Modifier = Modifier) {
+    val initialFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            initialFocusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -82,7 +96,10 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                         "1. Go to Firestick Settings (Gear icon on far right).\n" +
                         "2. Select \"My Fire TV\" (or Device & Software).\n" +
                         "3. Click on \"About\".\n" +
-                        "4. Highlight the device name (e.g. Fire TV Stick 4K) and click the Select button on your remote 7 TIMES until you see \"No need, you are already a developer.\""
+                        "4. Highlight the device name (e.g. Fire TV Stick 4K) and click the Select button on your remote 7 TIMES until you see \"No need, you are already a developer.\"",
+                modifier = Modifier
+                    .focusRequester(initialFocusRequester)
+                    .testTag("guide_card_step_1")
             )
         }
 
@@ -97,7 +114,8 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                         "1. Press Back to return to \"My Fire TV\".\n" +
                         "2. Click \"Developer Options\".\n" +
                         "3. Select \"Install unknown apps\" (or Apps from Unknown Sources).\n" +
-                        "4. Turn it ON for \"Downloader\", \"Silk Browser\", and \"MazZe Tools\"."
+                        "4. Turn it ON for \"Downloader\", \"Silk Browser\", and \"MazZe Tools\".",
+                modifier = Modifier.testTag("guide_card_step_2")
             )
         }
 
@@ -111,7 +129,8 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                 description = "The dreaded Parse Error happens when:\n\n" +
                         "• Architecture Mismatch: Most standard Firestick models (Fire TV Stick Lite, Stick 4K Max 1st gen) run 32-bit (armeabi-v7a). If you try to install a 64-bit-only (arm64-v8a) APK, it will fail.\n" +
                         "• Android API Level: Fire OS 7 is based on Android 9 (Pie). If an app requires Android 10 or 11 minimum, Fire OS cannot install it.\n" +
-                        "• Corrupted or Incomplete Download: Check your Wi-Fi and re-download from the MazZe Tools transfer URL."
+                        "• Corrupted or Incomplete Download: Check your Wi-Fi and re-download from the MazZe Tools transfer URL.",
+                modifier = Modifier.testTag("guide_card_step_3")
             )
         }
 
@@ -124,7 +143,8 @@ fun TvGuideScreen(modifier: Modifier = Modifier) {
                 title = "How to Transfer Without Any Cables",
                 description = "Two super simple methods:\n\n" +
                         "• Method A (Browser / Downloader): Open \"Beam to TV\" tab on this phone. Open Downloader on Firestick, enter the IP (e.g. http://192.168.1.XX:8888) and 1-tap download!\n\n" +
-                        "• Method B (6-Digit PIN): Open MazZe Tools on both devices on the same Wi-Fi. Enter the 6-digit PIN on the TV Receive screen to pull the app directly."
+                        "• Method B (6-Digit PIN): Open MazZe Tools on both devices on the same Wi-Fi. Enter the 6-digit PIN on the TV Receive screen to pull the app directly.",
+                modifier = Modifier.testTag("guide_card_step_4")
             )
         }
     }
@@ -136,10 +156,13 @@ fun GuideStepCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     iconColor: Color,
     title: String,
-    description: String
+    description: String,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .tvFocusHighlight(shape = RoundedCornerShape(14.dp)),
         colors = CardDefaults.cardColors(containerColor = DarkSurface),
         border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
         shape = RoundedCornerShape(14.dp)
