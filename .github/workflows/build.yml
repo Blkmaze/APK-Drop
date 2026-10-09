@@ -23,19 +23,21 @@ jobs:
         with:
           gradle-version: 9.3.1
 
-      # The project references a debug.keystore that isn't in the repo, so generate one.
-      - name: Create debug keystore
+      - name: Restore or create debug keystore
+        env:
+          KS: ${{ secrets.DEBUG_KEYSTORE_B64 }}
         run: |
-          keytool -genkeypair -v -keystore debug.keystore \
-            -storepass android -keypass android -alias androiddebugkey \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
+          if [ -n "$KS" ]; then
+            echo "$KS" | base64 -d > debug.keystore
+          else
+            keytool -genkeypair -v -keystore debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
 
       - name: Accept Android SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+        run: gradle assembleDebug --no-daemon -PappVersionCode=${{ github.run_number }}
 
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk APK-Drop.apk
